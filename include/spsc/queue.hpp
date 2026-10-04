@@ -62,8 +62,16 @@ public:
     return true;
   }
 
+  template <class... Args> void emplace(Args &&...args) {
+    while (!try_emplace(std::forward<Args>(args)...)) {
+    }
+  }
+
   bool try_push(const T &value) { return try_emplace(value); }
   bool try_push(T &&value) { return try_emplace(std::move(value)); }
+
+  void push(const T &value) { emplace(value); }
+  void push(T &&value) { emplace(std::move(value)); }
 
   [[nodiscard]] T *front() noexcept {
     const auto read = consumer_.read.load(std::memory_order_relaxed);
@@ -88,6 +96,17 @@ public:
     assert(front() != nullptr && "pop requires a non-empty queue");
     Traits::destroy(allocator_, storage_ + read);
     consumer_.read.store(increment(read), std::memory_order_release);
+  }
+
+  bool try_pop(T &value) noexcept(std::is_nothrow_move_assignable_v<T>) {
+    static_assert(std::is_move_assignable_v<T>, "T must be move assignable");
+    T *item = front();
+    if (item == nullptr) {
+      return false;
+    }
+    value = std::move(*item);
+    pop();
+    return true;
   }
 
   [[nodiscard]] bool empty() const noexcept {

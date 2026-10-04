@@ -24,9 +24,23 @@ endif()
 if(SPSC_BUILD_BENCHMARKS)
   add_executable(queue_benchmark benchmarks/queue_benchmark.cpp)
   target_link_libraries(queue_benchmark PRIVATE spsc::queue Threads::Threads)
+
+  add_executable(latency_benchmark benchmarks/latency_benchmark.cpp)
+  target_link_libraries(latency_benchmark PRIVATE spsc::queue Threads::Threads)
 endif()
 
 if(SPSC_BUILD_EXAMPLES)
   add_executable(queue_example examples/basic.cpp)
   target_link_libraries(queue_example PRIVATE spsc::queue Threads::Threads)
+
+  add_executable(market_data_example examples/market_data_pipeline.cpp)
+  target_link_libraries(market_data_example PRIVATE spsc::queue Threads::Threads)
 endif()
+
+include(GNUInstallDirs)
+install(TARGETS spsc_queue EXPORT spsc_queue_targets)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(EXPORT spsc_queue_targets
+  FILE spsc_queue-config.cmake
+  NAMESPACE spsc::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/spsc_queue)

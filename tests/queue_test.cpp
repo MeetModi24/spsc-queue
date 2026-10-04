@@ -31,6 +31,18 @@ void basic_operations() {
   assert(queue.empty());
 }
 
+void blocking_and_pop_helpers() {
+  spsc::Queue<int> queue(2);
+  queue.push(11);
+  queue.emplace(22);
+  int value = 0;
+  assert(queue.try_pop(value));
+  assert(value == 11);
+  assert(queue.try_pop(value));
+  assert(value == 22);
+  assert(!queue.try_pop(value));
+}
+
 void object_lifetime() {
   {
     spsc::Queue<Counted> queue(4);
@@ -72,6 +84,7 @@ void concurrent_sequence() {
 
 int main() {
   basic_operations();
+  blocking_and_pop_helpers();
   object_lifetime();
   move_only_values();
   concurrent_sequence();
